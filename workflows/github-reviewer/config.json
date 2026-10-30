@@ -1,0 +1,21 @@
+{
+  "automation_name": "github-pr-sentinel",
+  "trigger": "webhook.github.pull_request.opened",
+  "permissions": [
+    "repository.contents.read",
+    "repository.pull_requests.write"
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "action": "gh pr diff ${process.env.PR_NUMBER}",
+      "description": "Fetch changes introduced in the target patch files."
+    },
+    {
+      "step": 2,
+      "action": "ai.analyze_code",
+      "system_prompt": "You are a senior software engineering auditor. Inspect the incoming raw code diff. Identify missing null/nil checks, unhandled exceptions, performance bottlenecks, and security flaws (SQL injection, hardcoded credentials). Summarize your findings cleanly using Markdown. Be brief, specific, and construct code snippets for optimization suggestions.",
+      "output_destination": "gh pr comment ${process.env.PR_NUMBER} --body \"${ai.analysis_result}\""
+    }
+  ]
+}
